@@ -81,8 +81,8 @@ def normalize_reward(reward):
 
 
 def train(max_eps=10000, max_buffer_size=10000,
-          batch_size=256, gamma=0.95, max_eval_eps=3,
-          update_freq=3, eval_freq=10, epsilon=0.1,
+          batch_size=512, gamma=0.95, max_eval_eps=3,
+          update_freq=3, eval_freq=10, epsilon=0.05,
           max_steps=2000, render=True, checkpoint_location='./checkpoint',
           save_checkpoint=True):
     env = gym.make('Berzerk-v0')
@@ -151,7 +151,8 @@ def train(max_eps=10000, max_buffer_size=10000,
         q_net.fit(x=tf.convert_to_tensor(states, dtype=tf.float32),
                   y=tf.convert_to_tensor(target_q_vals, dtype=tf.float32),
                   batch_size=16, verbose=1)
-        checkpoint_manager.save()
+        if save_checkpoint:
+            checkpoint_manager.save()
         if eps % update_freq == 0 and eps != 0:
             target_q_net.set_weights(q_net.get_weights())
         if eps % eval_freq == 0 and eps != 0:
