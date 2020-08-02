@@ -2,6 +2,7 @@ import gym
 import random
 import numpy as np
 import tensorflow as tf
+import logging
 from collections import deque
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, Dense, Flatten, BatchNormalization
@@ -75,12 +76,12 @@ def normalize_reward(reward):
     if reward > 0:
         return 1.0
     elif reward < 0:
-        return -1.0
+        return -5.0
     else:
         return 0.0
 
 
-def train(max_eps=10000, max_buffer_size=10000,
+def train(max_eps=10000, max_buffer_size=5000,
           batch_size=512, gamma=0.95, max_eval_eps=3,
           update_freq=3, eval_freq=10, epsilon=0.05,
           max_steps=2000, render=True, checkpoint_location='./checkpoint',
@@ -130,24 +131,35 @@ def train(max_eps=10000, max_buffer_size=10000,
             sampled_batch = list(replay_buffer)
         else:
             sampled_batch = random.sample(replay_buffer, batch_size)
-        actual_batch_size = len(sampled_batch)
+        # actual_batch_size = len(sampled_batch)
+        logging.info('Preparing batch...')
         states, next_states, rewards, actions, terminals = [], [], [], [], []
         for state, next_state, reward, done, action in sampled_batch:
             states.append(state)
             next_states.append(next_state)
-            rewards.append(reward)
-            terminals.append(done)
+            rewards.append([reward])
+            terminals.append([0.0 if done else 1.0])
             actions.append(action)
+        logging.info('Calculating loss...')
         target_q_vals = q_net(tf.convert_to_tensor(
-            states, dtype=tf.float32)).numpy()
+            states, dtype=tf.float32))
         next_q_vals = target_q_net(tf.convert_to_tensor(
-            next_states, dtype=tf.float32)).numpy()
+            next_states, dtype=tf.float32))
+        max_next_q_vals = tf.expand_dims(tf.reduce_max(next_q_vals, axis=1), axis=1)
+        action_onehot = tf.one_hot(actions, action_space_size)
+        action_onehot_reverse = tf.ones_like(action_onehot) - action_onehot
+        exclude_update_q_vals = target_q_vals * action_onehot_reverse
+        update_q_vals_reward = action_onehot * tf.convert_to_tensor(rewards)
+        update_q_vals_discounted_max_q = action_onehot * max_next_q_vals * gamma * tf.convert_to_tensor(terminals)
+        target_q_vals = exclude_update_q_vals + update_q_vals_discounted_max_q + update_q_vals_reward
+        """
         for i in range(actual_batch_size):
             if terminals[i]:
                 target_q_vals[i, actions[i]] = rewards[i]
             else:
-                target_q_vals[i, actions[i]] = rewards[i] + \
-                    gamma * next_q_vals[i, :].max()
+                target_q_vals[i, actions[i]] = rewards[i] + gamma * max_next_q_vals[i]
+        """
+        logging.info('Start training...')
         q_net.fit(x=tf.convert_to_tensor(states, dtype=tf.float32),
                   y=tf.convert_to_tensor(target_q_vals, dtype=tf.float32),
                   batch_size=16, verbose=1)
