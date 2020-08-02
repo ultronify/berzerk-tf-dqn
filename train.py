@@ -11,14 +11,18 @@ def build_q_net(input_shape, action_space_size):
     print('Initialize Q net with action space size {0} and state shape {1}'.format(
         action_space_size, input_shape))
     model = Sequential()
-    model.add(Conv2D(16, (8, 8), strides=(2, 2), padding='same',
+    model.add(Conv2D(16, (4, 4), strides=(2, 2), padding='same',
                      kernel_initializer='he_uniform',
                      activation='relu', input_shape=input_shape))
     model.add(Conv2D(32, (4, 4), strides=(2, 2),
                      padding='same', kernel_initializer='he_uniform',
                      activation='relu'))
+    model.add(Conv2D(64, (4, 4), strides=(2, 2),
+                     padding='same', kernel_initializer='he_uniform',
+                     activation='relu'))
     model.add(BatchNormalization())
     model.add(Flatten())
+    model.add(Dense(512, activation='relu', kernel_initializer='he_uniform'))
     model.add(Dense(256, activation='relu', kernel_initializer='he_uniform'))
     model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
     model.add(Dense(action_space_size, activation='linear'))
