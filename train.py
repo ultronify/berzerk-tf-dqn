@@ -83,8 +83,9 @@ def train(max_eps=10000, max_buffer_size=10000,
           save_checkpoint=True):
     env = gym.make('Berzerk-v0')
     eval_env = gym.make('Berzerk-v0')
-    env.render()
-    eval_env.render()
+    if render:
+        env.render()
+        eval_env.render()
     best_avg_reward = 0.0
     action_space_size = env.action_space.n
     state_shape = sanitize_state(env.reset()).shape
