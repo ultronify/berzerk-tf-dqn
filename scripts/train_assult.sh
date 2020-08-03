@@ -9,12 +9,12 @@ python cli.py \
     --batch_size 64 \
     --logging_level critical \
     --render \
-    --epsilon 0.1 \
+    --epsilon 0.8 \
     --learning_rate 0.01 \
     --train_per_episode 16 \
     --rounds_per_episode 1 \
     --game_id Assault-v0 \
     --update_freq 1 \
-    --model_location=skiing \
-    --checkpoint_location=skiing \
-    --eval_freq=5
+    --model_location=assault \
+    --checkpoint_location=assault \
+    --eval_freq=20
