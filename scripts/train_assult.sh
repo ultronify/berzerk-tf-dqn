@@ -4,12 +4,12 @@ set -e
 set -o pipefail
 
 python cli.py \
-    --max_eps 2000 \
-    --max_steps 2000 \
+    --max_eps 200 \
+    --max_steps 6000 \
     --batch_size 64 \
     --logging_level critical \
     --render \
-    --epsilon 0.8 \
+    --epsilon 0.6 \
     --learning_rate 0.01 \
     --train_per_episode 16 \
     --rounds_per_episode 1 \
