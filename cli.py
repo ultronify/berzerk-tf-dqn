@@ -21,8 +21,12 @@ if __name__ == '__main__':
     parser.add_argument('--eval_freq', dest='eval_freq', type=int, default=10)
     parser.add_argument('--train_per_episode',
                         dest='train_per_episode', type=int, default=1)
+    parser.add_argument('--max_eval_eps',
+                        dest='max_eval_eps', type=int, default=3)
     parser.add_argument('--rounds_per_episode',
                         dest='rounds_per_episode', type=int, default=1)
+    parser.add_argument('--max_buffer_size',
+                        dest='max_buffer_size', type=int, default=5000)
     parser.add_argument('--update_freq',
                         dest='update_freq', type=int, default=3)
     parser.add_argument('--max_steps', dest='max_steps',
@@ -32,22 +36,31 @@ if __name__ == '__main__':
     parser.add_argument('--epsilon', dest='epsilon', type=float, default=0.05)
     parser.add_argument('--learning_rate',
                         dest='learning_rate', type=float, default=1e-3)
+    parser.add_argument('--epsilon_decay',
+                        dest='epsilon_decay', type=float, default=0.99)
     args = parser.parse_args()
     if args.logging_level == 'critical':
         logging.basicConfig(level=logging.CRITICAL)
     if args.logging_level == 'info':
         logging.basicConfig(level=logging.INFO)
-    if args.mode == 'train':
-        train(render=args.render, max_eps=args.max_eps,
-              max_steps=args.max_steps, game_id=args.game_id,
-              batch_size=args.batch_size, epsilon=args.epsilon,
+    if args.mode in ('train', 'eval'):
+        train(render=args.render,
+              max_eps=args.max_eps,
+              max_steps=args.max_steps,
+              game_id=args.game_id,
+              batch_size=args.batch_size,
+              epsilon=args.epsilon,
+              epsilon_decay=args.epsilon_decay,
               learning_rate=args.learning_rate,
               train_per_episode=args.train_per_episode,
               rounds_per_episode=args.rounds_per_episode,
               update_freq=args.update_freq,
               checkpoint_location=args.checkpoint_location,
               model_location=args.model_location,
-              eval_freq=args.eval_freq)
+              eval_freq=args.eval_freq,
+              mode=args.mode,
+              max_eval_eps=args.max_eval_eps,
+              max_buffer_size=args.max_buffer_size)
     elif args.mode == 'explore':
         explore(game_id=args.game_id)
     else:
